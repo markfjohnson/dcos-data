@@ -1,0 +1,90 @@
+{
+  "apiVersion": "V2",
+  "name": "edgelb-kubernetes-cluster-proxy-basic",
+  "count": 1,
+  "autoCertificate": true,
+  "haproxy": {
+    "frontends": [
+      {
+        "bindPort": 6443,
+        "protocol": "HTTPS",
+        "certificates": [
+          "$AUTOCERT"
+        ],
+        "linkBackend": {
+          "defaultBackend": "kubernetes-cluster1"
+        }
+      },
+      {
+        "bindPort": 6444,
+        "protocol": "HTTPS",
+        "certificates": [
+          "$AUTOCERT"
+        ],
+        "linkBackend": {
+          "defaultBackend": "kubernetes-cluster2"
+        }
+      },
+      {
+        "bindPort": 6446,
+        "protocol": "HTTPS",
+        "certificates": [
+          "$AUTOCERT"
+        ],
+        "linkBackend": {
+          "defaultBackend": "cassandra"
+        }
+      }
+    ],
+    "backends": [
+      {
+        "name": "kubernetes-cluster1",
+        "protocol": "HTTPS",
+        "services": [
+          {
+            "mesos": {
+              "frameworkName": "kubernetes-cluster1",
+              "taskNamePattern": "kube-control-plane"
+            },
+            "endpoint": {
+              "portName": "apiserver"
+            }
+          }
+        ]
+      },
+      {
+        "name": "kubernetes-cluster2",
+        "protocol": "HTTPS",
+        "services": [
+          {
+            "mesos": {
+              "frameworkName": "kubernetes-cluster2",
+              "taskNamePattern": "kube-control-plane"
+            },
+            "endpoint": {
+              "portName": "apiserver"
+            }
+          }
+        ]
+      },
+      {
+        "name": "cassandra",
+        "protocol": "HTTPS",
+        "services": [
+          {
+            "mesos": {
+              "frameworkName": "cassandra",
+              "taskNamePattern": "cassandra-control-plane"
+            },
+            "endpoint": {
+              "portName": "apiserver"
+            }
+          }
+        ]
+      }
+    ],
+    "stats": {
+      "bindPort": 6090
+    }
+  }
+}
